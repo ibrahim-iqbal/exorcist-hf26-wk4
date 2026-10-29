@@ -9,7 +9,7 @@
 [![Powered by EmbeddingGemma](https://img.shields.io/badge/powered%20by-EmbeddingGemma%20300M-E23636.svg)](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-E23636.svg)](#contributing)
 
-[**Live demo**](https://exorcist.onrender.com) · [**DEV write-up**](./docs/DEV_POST.md) · [**Design spec**](./docs/DESIGN.md)
+[**Live demo**](https://exorcist-hf26-wk4.onrender.com) · [**DEV write-up**](./docs/DEV_POST.md) · [**Design spec**](./docs/DESIGN.md)
 
 </div>
 
@@ -79,7 +79,7 @@ The model runs entirely in-browser via `@huggingface/transformers` with ONNX Run
 
 ## Try it
 
-**Live:** <https://exorcist.onrender.com>
+**Live:** <https://exorcist-hf26-wk4.onrender.com>
 
 Or run locally:
 

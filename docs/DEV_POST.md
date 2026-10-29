@@ -44,9 +44,9 @@ the point.
 
 ## Demo
 
-**Live:** <https://exorcist.onrender.com>
+**Live:** <https://exorcist-hf26-wk4.onrender.com>
 
-<!-- {% embed https://exorcist.onrender.com %} -->
+<!-- {% embed https://exorcist-hf26-wk4.onrender.com %} -->
 
 Click **"Try a demo tome"** on the landing page to scan a deliberately haunted
 `package.json` — it has lodash+underscore duplicates, deprecated `left-pad`
