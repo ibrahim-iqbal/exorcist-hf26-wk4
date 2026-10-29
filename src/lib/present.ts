@@ -36,6 +36,13 @@ export function verdict(score: number): string {
   return 'Damned';
 }
 
+export function plain(score: number): string {
+  if (score >= 90) return 'Healthy';
+  if (score >= 75) return 'Needs attention';
+  if (score >= 45) return 'Risky';
+  return 'Critical';
+}
+
 export function kb(bytes: number): string {
   const k = bytes / 1024;
   return `${k >= 10 ? Math.round(k) : k.toFixed(1)} kB`;

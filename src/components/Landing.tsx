@@ -16,6 +16,7 @@ interface LandingProps {
   onToggleTheme: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
+  onShowAbout: () => void;
 }
 
 const HUNT: { kind: CheckCategory; title: string; color: string; line: string }[] = [
@@ -37,7 +38,7 @@ const PHASE_MSG: Record<string, string> = {
   done: 'Judgement',
 };
 
-export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound }: LandingProps) {
+export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound, onShowAbout }: LandingProps) {
   const C = useCompact();
   const at = (desk: string, phone: string) => css(C ? phone : desk);
   const input = useRef<HTMLInputElement>(null);
@@ -133,6 +134,9 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
         <button className="link" type="button" onClick={onToggleLantern}>
           {lantern ? 'Lantern on' : 'Lantern off'}
         </button>
+        <button className="link" type="button" onClick={onShowAbout}>
+          About
+        </button>
         <button className="iconbtn" type="button" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
           <ThemeIcon theme={theme} />
         </button>
@@ -154,6 +158,9 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
         <div className="px rise" style={css('margin-top:12px;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--text2);animation-delay:.15s')}>
           Exorcism for your package.json
         </div>
+        <p className="px rise" style={css('margin:14px 0 0;max-width:460px;padding:0 16px;font-size:13px;line-height:1.6;color:var(--text2);text-align:center;animation-delay:.2s')}>
+          Checks your dependencies for dead, outdated and heavy packages, then gives your project a health score.
+        </p>
       </div>
 
       {/* The summoning circle is the drop zone */}
@@ -221,7 +228,7 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
           </svg>
           <span>Try a demo tome</span>
         </button>
-        {(localError || error) && <p role="alert" className="errline">{localError || error}</p>}
+        {(localError || error) && <p role="alert" className="errline" style={at('position:absolute;left:0;right:0;bottom:100%;margin:0 0 12px', 'margin-top:14px')}>{localError || error}</p>}
       </div>
 
       {/* GitHub URL */}

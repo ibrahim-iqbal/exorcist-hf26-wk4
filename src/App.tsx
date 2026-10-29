@@ -3,24 +3,37 @@ import { Shell } from './design/Shell';
 import { SCRAWLS_LANDING, SCRAWLS_RESULTS } from './design/static';
 import { Landing } from './components/Landing';
 import { Results } from './components/Results';
+import { About } from './components/About';
 import { useTheme } from './hooks/useTheme';
 import { useSound } from './hooks/useSound';
 import { prefersReducedMotion } from './hooks/motion';
 import { runScan } from './lib/scanner';
 import type { ScanResult, ScanState } from './lib/types';
 
-type AppPhase = 'idle' | 'scanning' | 'judging' | 'leaving' | 'results' | 'error';
+type AppPhase = 'idle' | 'scanning' | 'judging' | 'leaving' | 'results' | 'error' | 'about';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 export default function App() {
   const [phase, setPhase] = useState<AppPhase>('idle');
+  const [preAbout, setPreAbout] = useState<AppPhase>('idle');
   const [scanState, setScanState] = useState<ScanState | null>(null);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [lantern, setLantern] = useState(() => !prefersReducedMotion());
   const { theme, toggle } = useTheme();
   const { soundOn, toggleSound, bell } = useSound();
+
+  const openAbout = useCallback(() => {
+    setPreAbout(phase);
+    setPhase('about');
+    window.scrollTo({ top: 0 });
+  }, [phase]);
+
+  const closeAbout = useCallback(() => {
+    setPhase(preAbout);
+    window.scrollTo({ top: 0 });
+  }, [preAbout]);
 
   const handleFile = useCallback(async (content: string) => {
     setPhase('scanning');
@@ -40,7 +53,7 @@ export default function App() {
       setPhase('results');
       window.scrollTo({ top: 0 });
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'The ritual failed.');
+      setErrorMsg(err instanceof Error ? err.message : "Couldn't read that. Check it's a valid package.json and try again.");
       setPhase('error');
     }
   }, [bell]);
@@ -55,11 +68,15 @@ export default function App() {
 
   const toggleLantern = () => setLantern((v) => !v);
 
+  if (phase === 'about') {
+    return <About onBack={closeAbout} theme={theme} onToggleTheme={toggle} />;
+  }
+
   if (phase === 'results' && result) {
     return (
       <div className="enter">
       <Shell scrawls={SCRAWLS_RESULTS} lantern={lantern} homeY={380} bottomPad={306}>
-        <Results result={result} onReset={reset} lantern={lantern} onToggleLantern={toggleLantern} theme={theme} onToggleTheme={toggle} soundOn={soundOn} onToggleSound={toggleSound} />
+        <Results result={result} onReset={reset} lantern={lantern} onToggleLantern={toggleLantern} theme={theme} onToggleTheme={toggle} soundOn={soundOn} onToggleSound={toggleSound} onShowAbout={openAbout} />
       </Shell>
       </div>
     );
@@ -77,6 +94,7 @@ export default function App() {
         onToggleTheme={toggle}
         soundOn={soundOn}
         onToggleSound={toggleSound}
+        onShowAbout={openAbout}
       />
     </Shell>
     </div>

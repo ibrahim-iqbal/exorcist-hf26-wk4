@@ -7,7 +7,7 @@ import { Sigil } from '../design/sigils';
 import { BARCODE_HTML } from '../design/static';
 import { useCountUp } from '../hooks/useCountUp';
 import { prefersReducedMotion } from '../hooks/motion';
-import { BANDS, BAND_ORDER, findings, kb, noteFor, quiet, verdict, word, type Note, BAND_SCRAWLS } from '../lib/present';
+import { BANDS, BAND_ORDER, findings, kb, noteFor, plain, quiet, verdict, word, type Note, BAND_SCRAWLS } from '../lib/present';
 import type { CheckCategory, Finding, ScanResult } from '../lib/types';
 import { ThemeIcon } from './Landing';
 import { toPng } from 'html-to-image';
@@ -21,6 +21,7 @@ interface ResultsProps {
   onToggleTheme: () => void;
   soundOn: boolean;
   onToggleSound: () => void;
+  onShowAbout: () => void;
 }
 
 const MAX_ROWS = 3;
@@ -59,7 +60,7 @@ interface OpenNote {
   top: number;
 }
 
-export function Results({ result, onReset, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound }: ResultsProps) {
+export function Results({ result, onReset, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound, onShowAbout }: ResultsProps) {
   const score = Math.max(0, Math.min(100, Math.round(result.healthScore)));
   const shown = useCountUp(score, 1400, 400);
   const [armed, setArmed] = useState(prefersReducedMotion());
@@ -285,6 +286,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
               <div className="rrow"><span>Model</span><span className="lead" /><span style={{ color: result.modelSkipped ? '#A1121F' : undefined }}>{result.modelSkipped ? 'unavailable' : 'EmbeddingGemma'}</span></div>
               <div className="rrow"><span>Bundle impact</span><span className="lead" /><span style={{ color: bloat > 0 ? '#A1121F' : undefined }}>{bloat > 0 ? `+${Math.round(bloat / 1024)} kB` : '0 kB'}</span></div>
               <div className="rrow"><span>Alternatives</span><span className="lead" /><span style={{ color: saved > 0 ? '#1F6B4A' : undefined }}>{saved} found</span></div>
+              <div className="rrow"><span>Condition</span><span className="lead" /><span>{plain(score)}</span></div>
               <div style={css('height:0;border-top:3px double rgba(27,20,16,.55);margin:8px 0 8px')} />
               <div className="rrow" style={{ fontSize: 15, height: 28 }}><span>SOUL INTEGRITY</span><span className="lead" /><span>{shown}/100</span></div>
             </div>
@@ -306,6 +308,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
           <button className="sndtog" type="button" onClick={onToggleSound} aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}>{soundOn ? 'Sound on' : 'Sound off'}</button>
           <button className="link" type="button" onClick={onToggleLantern}>{lantern ? 'Lantern on' : 'Lantern off'}</button>
           <button className="link" type="button" onClick={onReset}>New scan</button>
+          <button className="link" type="button" onClick={onShowAbout}>About</button>
           <button className="iconbtn" type="button" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
             <ThemeIcon theme={theme} />
           </button>
@@ -315,7 +318,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
             <svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--blood)" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 4V20" /><path d="M8 15H16" /></svg>
             Exorcist
           </h1>
-          <div role="status" aria-live="polite" className="sr-only">{`${result.projectName ?? 'Project'} scored ${score} out of 100: ${verdict(score)}`}</div>
+          <div role="status" aria-live="polite" className="sr-only">{`${result.projectName ?? 'Project'} scored ${score} out of 100: ${verdict(score)} (${plain(score).toLowerCase()})`}</div>
           <div className="px" style={css('margin-top:8px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--text2)')}>Exorcism for your package.json</div>
         </div>
 
@@ -408,7 +411,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
             if (!g) return null;
             const col = cat === 'resurrection' ? 'var(--ecto)' : 'var(--bloodtext)';
             return (
-              <div key={cat} style={{ position: 'absolute', left: g.left, top: g.top, width: g.width, height: g.height }}>
+              <div key={cat} aria-hidden="true" style={{ position: 'absolute', left: g.left, top: g.top, width: g.width, height: g.height }}>
                 {BAND_SCRAWLS[cat].small.map((t, k) => (
                   <span key={t} className="scrawl" style={{ left: 448, ...(k === 0 ? { top: 4 } : { bottom: 2 }), fontSize: 13, transform: 'rotate(-1.5deg)', color: col }}>{t}</span>
                 ))}
