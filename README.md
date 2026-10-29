@@ -13,7 +13,18 @@
 
 </div>
 
-<!-- TODO: hero screenshot once deployed -->
+<p align="center">
+  <img src="docs/screenshots/landing-dark.jpg" alt="Exorcist landing — dark theme" width="720" />
+</p>
+
+<details>
+<summary>More screenshots</summary>
+
+| Dark results | Light landing | Light results |
+|:---:|:---:|:---:|
+| ![Results dark](docs/screenshots/results-dark.jpg) | ![Landing light](docs/screenshots/landing-light.jpg) | ![Results light](docs/screenshots/results-light.jpg) |
+
+</details>
 
 ---
 
@@ -40,7 +51,7 @@ The invoicing-app fix is `npm audit`, which covers CVEs but not the slow rot —
 
 - **Health score.** Findings roll up into a single 0–100 score with severity-weighted penalties (critical −10, warning −5, info −2).
 
-- **Themed UI.** Gothic Broadside × Neon Exorcism — carved-stone Cinzel headings on OLED black (#0A0A0A), Evil Dead crimson (#E23636) accents, warm parchment text (#F5F0E8). Scan phases: *Reading the Tome*, *Summoning the Spirit Detector*, *Performing the Exorcism*.
+- **Themed UI.** Dark and light themes inspired by Victorian-era broadside posters, complete with atmospheric textures (grain, dust, stain), a blood-drip ceiling, flickering candles, a lantern that follows your cursor, and handwritten scrawls only visible near the light. IM Fell English headings, IBM Plex Mono data, Homemade Apple scrawls. Findings are presented as category bands with sigils, and clicking one opens a torn-paper case note with remediation commands.
 
 ## How it works
 
@@ -91,9 +102,10 @@ npm run preview
 ## Stack
 
 - **UI:** React 19 + TypeScript 6 + Vite 8, static site, no backend
-- **Styling:** Tailwind CSS v4 (CSS-first config)
+- **Styling:** Tailwind CSS v4 (CSS-first config), CSS custom properties for dark/light theming
+- **Fonts:** IM Fell English, IBM Plex Mono, Homemade Apple via `@fontsource`
 - **Model runtime:** [`@huggingface/transformers`](https://huggingface.co/docs/transformers.js) running EmbeddingGemma 300M ONNX via ONNX Runtime WASM
-- **Animation:** Framer Motion
+- **Animation:** Framer Motion, CSS keyframes for atmospheric effects
 - **Deploy:** Render static site via `render.yaml` blueprint, auto-deploys on push
 
 ## Why open matters
@@ -121,7 +133,7 @@ Stated plainly:
 
 Issues and PRs welcome. The main areas that could use help:
 
-- [ ] Lottie ambient animations (candle flames, smoke wisps)
+- [x] ~~Lottie ambient animations~~ → CSS keyframe candles, embers, blood drips
 - [ ] IndexedDB caching for model weights across sessions
 - [ ] Lockfile parsing for transitive dependency analysis
 - [ ] Additional check categories (security advisories, TypeScript coverage)
