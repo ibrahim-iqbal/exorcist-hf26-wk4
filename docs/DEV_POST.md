@@ -3,26 +3,8 @@ title: "Exorcist: a ghost hunter for your package.json"
 published: false
 tags: hf26challenge, devchallenge, opensource, webdev
 ai_disclosure_level: some_ai
-cover_image: https://raw.githubusercontent.com/ibrahim-iqbal/exorcist-hf26-wk4/main/docs/screenshots/landing-dark.jpg
+cover_image: https://raw.githubusercontent.com/ibrahim-iqbal/exorcist-hf26-wk4/main/docs/screenshots/dev-cover.png
 ---
-
-<!--
-DRAFT — review before publishing.
-
-Required submission tag: #hf26challenge (template also wants #devchallenge).
-Deadline: October 31, 2026. Submit by publishing this as a DEV post.
-Only one submission per person for this challenge series.
-
-Before publishing:
-- [ ] Fix the live demo link (currently 404s — see render.yaml / Render dashboard)
-- [ ] Confirm which Prize Categories to actually enter (see note at bottom)
-- [ ] Swap the cover_image URL for a real hosted screenshot if the raw.githubusercontent
-      link doesn't render well as a cover
-- [ ] Set ai_disclosure_level honestly — "some_ai" assumes significant AI-assisted
-      development via Claude Code; change to "fully_autonomous" or "no_ai" if that's
-      not accurate for how this was actually built
-- [ ] Decide whether to embed an Agent Session (devrelay-sessions) in the optional section
--->
 
 ## What I Built
 
@@ -44,9 +26,7 @@ the point.
 
 ## Demo
 
-**Live:** <https://exorcist-hf26-wk4.onrender.com>
-
-<!-- {% embed https://exorcist-hf26-wk4.onrender.com %} -->
+**Live:** [https://exorcist-hf26-wk4.onrender.com](https://exorcist-hf26-wk4.onrender.com)
 
 Click **"Try a demo tome"** on the landing page to scan a deliberately haunted
 `package.json` — it has lodash+underscore duplicates, deprecated `left-pad`
@@ -55,9 +35,13 @@ fire without hunting down a real cursed project first.
 
 No login, no setup, no data leaves your browser — see Privacy below.
 
+![Landing page — the summoning circle awaits your package.json](https://raw.githubusercontent.com/ibrahim-iqbal/exorcist-hf26-wk4/main/docs/screenshots/landing-dark.jpg)
+
+![Results — the toe-tag verdict card with a health score of 44/100](https://raw.githubusercontent.com/ibrahim-iqbal/exorcist-hf26-wk4/main/docs/screenshots/results-dark.jpg)
+
 ## Code
 
-Repo: <https://github.com/ibrahim-iqbal/exorcist-hf26-wk4>
+Repo: [https://github.com/ibrahim-iqbal/exorcist-hf26-wk4](https://github.com/ibrahim-iqbal/exorcist-hf26-wk4)
 
 ```bash
 git clone https://github.com/ibrahim-iqbal/exorcist-hf26-wk4.git
@@ -77,7 +61,20 @@ hand-built CSS theming layer (custom properties, no CSS-in-JS) for the poster
 UI. Framer Motion and plain CSS keyframes handle the atmosphere — drips,
 embers, the cursor-following lantern.
 
-**The open-source AI piece is [EmbeddingGemma 300M](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX)**
+### The scan pipeline
+
+The scan runs entirely in the browser in seven stages:
+
+![Scan pipeline architecture — parse through seven analyzers to health score](https://raw.githubusercontent.com/ibrahim-iqbal/exorcist-hf26-wk4/main/docs/screenshots/scan-pipeline.svg)
+
+Each stage reports progress so the UI can animate the summoning circle in
+real time. If any stage fails (model can't load, registry unreachable), the
+pipeline degrades gracefully — the checks that needed that data are skipped,
+and the rest still run.
+
+### The open-source AI piece
+
+**[EmbeddingGemma 300M](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX)**
 — Google's open-weight embedding model from the Gemma family, running
 entirely in-browser via [Transformers.js](https://huggingface.co/docs/transformers.js)
 on ONNX Runtime WebAssembly. No API key, no inference server, no per-request
@@ -130,34 +127,7 @@ the whole pitch for "open innovation" here: the intelligence lives where the
 data already is, instead of the data having to travel to where the
 intelligence is.
 
-## My Agent Session
-
-<!-- Optional. Fill in with a DevRelay agent_session embed if you want to
-     show the build process, or delete this section. -->
-
-## The Spirit of It
-
-<!-- Optional. This is the free-form "lean into the theme" section — a line
-     or two about the Día de los Muertos / spooky angle if you want it, or
-     delete this section entirely. -->
-
 ## Prize Categories
-
-<!--
-Candidates based on what's actually true of the project — confirm before
-publishing, don't just leave both in:
-
-- Best Use of Gemma — strong, direct fit: EmbeddingGemma 300M does the two
-  ML-based checks (duplicate detection, alternative suggestions), run
-  entirely client-side.
-- Best Use of Render — weaker fit. The category wants "host an agent front
-  end, AI runtime, or run Hermes or OpenClaw." Exorcist is a static site on
-  Render that happens to run client-side AI inference in the visitor's
-  browser — it's not really "hosting an AI runtime" in the sense the
-  category describes. Include only if comfortable defending that framing to
-  judges; otherwise drop it and let the live demo link speak for itself
-  without claiming the category.
--->
 
 - Best Use of Gemma
 
