@@ -1,48 +1,48 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Hacktoberfest-2026-E23636?style=for-the-badge&logo=hacktoberfest&logoColor=white" alt="Hacktoberfest 2026" />
-  <img src="https://img.shields.io/badge/Week_4-Ghost_in_the_Machine-0A0A0A?style=for-the-badge" alt="Week 4" />
-  <img src="https://img.shields.io/badge/Gemma-EmbeddingGemma_300M-4285F4?style=for-the-badge&logo=google&logoColor=white" alt="Gemma" />
-  <img src="https://img.shields.io/badge/Render-Static_Site-46E3B7?style=for-the-badge&logo=render&logoColor=white" alt="Render" />
-</p>
+<div align="center">
 
-<h1 align="center">
-  <span style="color:#E23636">E</span>xorcist
-</h1>
+# Exorcist
 
-<p align="center">
-  <strong>Dependency Health Scanner</strong><br/>
-  <em>Drop your package.json. See what lurks within.</em>
-</p>
+### Drop your package.json. See what lurks within.
 
-<p align="center">
-  <a href="#try-it">Try the live demo</a> · <a href="#how-it-works">How it works</a> · <a href="#why-open-matters">Why open matters</a>
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-E23636.svg)](./LICENSE)
+[![Hacktoberfest 2026 — Week 4](https://img.shields.io/badge/Hacktoberfest-Week%204%20Ghost%20in%20the%20Machine-E23636.svg)](https://dev.to/challenges/hacktoberfest-week4-2026-10-26)
+[![Powered by EmbeddingGemma](https://img.shields.io/badge/powered%20by-EmbeddingGemma%20300M-E23636.svg)](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-E23636.svg)](#contributing)
+
+[**Live demo**](https://exorcist.onrender.com) · [**DEV write-up**](./docs/DEV_POST.md) · [**Design spec**](./docs/DESIGN.md)
+
+</div>
+
+<!-- TODO: hero screenshot once deployed -->
 
 ---
 
-## The Problem
-
 Every Node.js project accumulates ghosts: deprecated packages nobody noticed, duplicates doing the same job, bloated bundles dragging down load times, licenses that conflict with yours, and ancient major versions three generations behind. These spirits hide in plain sight inside `package.json`, haunting your build long after anyone remembers inviting them in.
 
-**Exorcist** performs the ritual your dependency tree has been waiting for.
+The invoicing-app fix is `npm audit`, which covers CVEs but not the slow rot — the functional duplicate you installed because you forgot you already had one, the 200kB library you pulled in for a function that ships with Node, the package whose last commit was in 2022. **Exorcist** catches those.
 
-## What It Does
+---
 
-Drop a `package.json` (or try the built-in demo) and Exorcist runs **7 dependency health checks** entirely in your browser — no server, no API keys, no data leaving your machine:
+## Features
 
-| Check | What it finds | How |
-|-------|--------------|-----|
-| **Possessions** | Duplicate packages doing the same thing | Embedding similarity via EmbeddingGemma 300M |
-| **Dead Spirits** | Deprecated packages | npm registry `deprecated` flag |
-| **Dormant Spirits** | Unmaintained packages (>2 years) | Last publish date from registry |
-| **Cursed Licenses** | Copyleft licenses in permissive projects | License field cross-reference |
-| **Bloated Spirits** | Oversized bundles (>20kB gzip) | Bundlephobia API |
-| **Ancient Spirits** | Major versions behind latest | Version comparison with registry |
-| **Resurrection** | Alternatives for dead/dormant packages | Embedding similarity to healthy packages |
+- **Fully local.** Your `package.json` never leaves your machine. The ML model downloads once and runs in the browser tab via WebAssembly. No API key, no backend, no telemetry. Checkable in the network tab.
 
-Each finding gets a severity (critical / warning / info), and the results roll up into a single **Health Score** from 0–100.
+- **7 dependency health checks.**
+  - **Possessions** — duplicate packages doing the same thing, detected by embedding similarity (82% cosine threshold). `lodash` and `underscore` share no keywords but Exorcist catches them.
+  - **Dead spirits** — deprecated packages flagged by the npm registry.
+  - **Dormant spirits** — packages with no publish in over 2 years.
+  - **Cursed licenses** — copyleft licenses (GPL, AGPL, SSPL) hiding in a permissive (MIT/Apache) project.
+  - **Bloated spirits** — bundles over 20kB gzipped, via the Bundlephobia API.
+  - **Ancient spirits** — packages a major version or more behind latest.
+  - **Resurrection** — alternative suggestions for dead/dormant packages, found by embedding similarity to healthy packages in the same `package.json`.
 
-## How It Works
+- **Graceful fallback.** If the embedding model can't load (offline, low memory, unsupported browser), Exorcist skips the two embedding-based checks and still runs the other five. No crash, no blank screen.
+
+- **Health score.** Findings roll up into a single 0–100 score with severity-weighted penalties (critical −10, warning −5, info −2).
+
+- **Themed UI.** Gothic Broadside × Neon Exorcism — carved-stone Cinzel headings on OLED black (#0A0A0A), Evil Dead crimson (#E23636) accents, warm parchment text (#F5F0E8). Scan phases: *Reading the Tome*, *Summoning the Spirit Detector*, *Performing the Exorcism*.
+
+## How it works
 
 ```mermaid
 graph LR
@@ -56,73 +56,66 @@ graph LR
     G --> H[Health Score +<br/>Finding Cards]
 ```
 
-### The Two Genuine Uses of Gemma
+### The two genuine uses of Gemma
 
 Exorcist uses [EmbeddingGemma 300M](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX) — Google's open-weight embedding model from the Gemma family — for two checks that actually need semantic understanding:
 
-1. **Duplicate detection** — `lodash` and `underscore` have different names but near-identical descriptions. Exorcist embeds every package's npm description and flags pairs above 82% cosine similarity. Keyword matching can't do this; `left-pad` and `string-pad` share no words but serve the same purpose.
+1. **Duplicate detection.** `lodash` and `underscore` have different names but near-identical descriptions. Exorcist embeds every package's npm description and flags pairs above 82% cosine similarity. Keyword matching can't do this; `left-pad` and `string-pad` share no words but serve the same purpose.
 
-2. **Alternative suggestions** — When a package is deprecated or unmaintained, Exorcist finds the closest healthy package by embedding distance. If `request` is dead, it can suggest `axios` or `node-fetch` based on semantic similarity rather than a hardcoded lookup table.
+2. **Alternative suggestions.** When a package is deprecated or unmaintained, Exorcist finds the closest healthy package by embedding distance. If `request` is dead, it can suggest `axios` or `node-fetch` — based on meaning, not a hardcoded lookup table.
 
-The model runs entirely in-browser via `@huggingface/transformers` with ONNX Runtime WebAssembly. Matryoshka truncation to 256 dimensions keeps memory reasonable. If the model can't load (offline, low memory, unsupported browser), Exorcist gracefully skips these two checks and still runs the other five.
+The model runs entirely in-browser via `@huggingface/transformers` with ONNX Runtime WebAssembly. Matryoshka truncation to 256 dimensions keeps memory reasonable.
 
-## Try It
+## Try it
 
-<!-- TODO: Replace with deployed URL -->
-**Live:** [exorcist.onrender.com](https://exorcist.onrender.com)
+**Live:** <https://exorcist.onrender.com>
 
 Or run locally:
 
 ```bash
-git clone https://github.com/ibrahim-iqbal/exorcist.git
-cd exorcist
+git clone https://github.com/ibrahim-iqbal/exorcist-hf26-wk4.git
+cd exorcist-hf26-wk4
 npm install
 npm run dev
 ```
 
-Click **"Try demo package.json"** to scan a deliberately haunted project with lodash+underscore duplicates, deprecated `left-pad` and `request`, and other dependency sins.
+Then open <http://localhost:5173>. First load downloads the model (~26 MB ONNX weights, one time). Click **"Try demo package.json"** to scan a deliberately haunted project with lodash+underscore duplicates, deprecated `left-pad` and `request`, and other dependency sins.
 
-## Why Open Matters
+Build + preview the production bundle:
 
-Exorcist runs **entirely in the browser**. Your `package.json` never leaves your machine. The ML model downloads once and runs locally via WebAssembly — no API keys, no cloud inference, no telemetry.
+```bash
+npm run build
+npm run preview
+```
 
-This matters because:
+## Stack
 
-- **Privacy** — `package.json` reveals your entire dependency tree, which frameworks you use, what versions you're behind on, and potentially which vulnerabilities you're exposed to. That's not something you should have to send to a third-party server.
-- **Works offline** — Once the model is cached, the full scan works without internet (except for npm registry lookups, which are public and anonymous).
-- **No rate limits, no costs** — Run it on every project, every day. Google's decision to release Gemma as open-weight means embedding-based duplicate detection doesn't cost per-query.
-- **Inspectable** — Every analyzer threshold, every similarity score, every heuristic is in the source. Disagree with the 82% duplicate threshold? Change it.
+- **UI:** React 19 + TypeScript 6 + Vite 8, static site, no backend
+- **Styling:** Tailwind CSS v4 (CSS-first config)
+- **Model runtime:** [`@huggingface/transformers`](https://huggingface.co/docs/transformers.js) running EmbeddingGemma 300M ONNX via ONNX Runtime WASM
+- **Animation:** Framer Motion
+- **Deploy:** Render static site via `render.yaml` blueprint, auto-deploys on push
+
+## Why open matters
+
+Exorcist runs **entirely in the browser**. Your `package.json` never leaves your machine.
+
+- **Privacy.** `package.json` reveals your entire dependency tree — which frameworks you use, what versions you're behind on, and potentially which vulnerabilities you're exposed to. That's not something you should have to send to a third-party server.
+- **Works offline.** Once the model is cached, the full scan works without internet (except for npm registry lookups, which are public and anonymous).
+- **No rate limits, no costs.** Run it on every project, every day. Google's decision to release Gemma as open-weight means embedding-based duplicate detection doesn't cost per-query.
+- **Inspectable.** Every analyzer threshold, every similarity score, every heuristic is in the source. Disagree with the 82% duplicate threshold? Change it.
 
 A closed embedding API would give the same duplicate detection quality, but it would require sending every package description to a server, paying per request, and trusting that the endpoint stays available. Open-weight means the intelligence lives where the data already is: on your machine.
 
-## The Design
+## Honest limits
 
-Gothic Broadside meets Neon Exorcism — carved-stone Cinzel headings on OLED black (#0A0A0A), Evil Dead crimson (#E23636) accents, warm parchment text (#F5F0E8). The scan phases have themed names: *Reading the Tome*, *Summoning the Spirit Detector*, *Performing the Exorcism*. Because if you're going to exorcise your dependencies, the ritual should feel like one.
-
-## Tech Stack
-
-| Layer | Choice |
-|-------|--------|
-| Framework | React 19 + TypeScript 6 |
-| Build | Vite 8 |
-| Styling | Tailwind CSS v4 (CSS-first) |
-| ML | EmbeddingGemma 300M via `@huggingface/transformers` + ONNX Runtime WASM |
-| Animation | Framer Motion |
-| Deploy | Render (static site via `render.yaml` blueprint) |
-
-## Deploy Your Own
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ibrahim-iqbal/exorcist)
-
-Or manually: the `render.yaml` blueprint handles everything — `npm install && npm run build`, static publish from `./dist`.
-
-## Honest Limits
+Stated plainly:
 
 - **Embedding checks need a modern browser** with WebAssembly SIMD support. Falls back gracefully to 5/7 checks without it.
 - **npm registry rate limits** can slow scans on very large `package.json` files (100+ deps). Exorcist batches requests with concurrency limits to stay polite.
 - **Bundlephobia API** sometimes returns no data for niche or scoped packages. Those packages are simply skipped for the bloat check.
 - **Duplicate detection** uses description similarity, not API surface analysis. Two packages with similar descriptions but different purposes could false-positive. The 82% threshold was chosen to minimize this.
-- **No lockfile analysis** — Exorcist reads `package.json`, not `package-lock.json`. It sees your direct dependencies, not the full resolved tree.
+- **No lockfile analysis.** Exorcist reads `package.json`, not `package-lock.json`. It sees your direct dependencies, not the full resolved tree.
 
 ## Contributing
 
@@ -132,6 +125,8 @@ Issues and PRs welcome. The main areas that could use help:
 - [ ] IndexedDB caching for model weights across sessions
 - [ ] Lockfile parsing for transitive dependency analysis
 - [ ] Additional check categories (security advisories, TypeScript coverage)
+
+**Guideline:** keep the "nothing uploaded" invariant honest. New features must not add server-side calls. The model is a file, not a service.
 
 ## Acknowledgements
 
@@ -143,4 +138,4 @@ Issues and PRs welcome. The main areas that could use help:
 
 ## License
 
-MIT
+[MIT](./LICENSE)
