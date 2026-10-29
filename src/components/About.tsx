@@ -45,12 +45,21 @@ const FAQ: QA[] = [
 
 export function About({ onBack, theme, onToggleTheme }: AboutProps) {
   return (
-    <div className="info" style={css('min-height:100vh;background:var(--bg);color:var(--text)')}>
-      <header style={css('position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;background:var(--bg);border-bottom:1px solid rgba(var(--rgb-text),.14)')}>
+    <div className="root" style={css('position:relative;min-height:100vh;background:var(--bg);color:var(--text)')}>
+      <div aria-hidden="true" style={css('position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse at 50% 0%, rgba(var(--rgb-blood),var(--lamp1)), transparent 60%)')} />
+      <div className="tex tex-dust" aria-hidden="true" style={{ position: 'fixed' }} />
+      <div className="tex tex-grain" aria-hidden="true" style={{ position: 'fixed' }} />
+
+      <header style={css('position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;background:var(--bg);border-top:3px solid var(--blood);border-bottom:1px solid rgba(var(--rgb-text),.14)')}>
         <button className="link" type="button" onClick={onBack}>
           ← Back
         </button>
-        <h1 className="cg" style={css('margin:0;font-size:22px;color:var(--text)')}>
+        <h1 className="cg" style={css('margin:0;font-size:22px;display:flex;align-items:center;gap:8px;color:var(--text);text-shadow:var(--wm-shadow)')}>
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blood)" strokeWidth="1.5" strokeLinecap="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 4V20" />
+            <path d="M8 15H16" />
+          </svg>
           Exorcist
         </h1>
         <button className="iconbtn" type="button" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -58,7 +67,7 @@ export function About({ onBack, theme, onToggleTheme }: AboutProps) {
         </button>
       </header>
 
-      <main style={css('max-width:720px;margin:0 auto;padding:40px 24px 80px')}>
+      <main style={css('position:relative;z-index:1;max-width:720px;margin:0 auto;padding:40px 24px 80px')}>
         <nav aria-label="Sections on this page" style={css('display:flex;flex-wrap:wrap;gap:10px 18px;margin-bottom:48px;font:500 11px \'IBM Plex Mono\',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)')}>
           <a href="#about" style={{ color: 'inherit' }}>About</a>
           <a href="#faq" style={{ color: 'inherit' }}>FAQ</a>
