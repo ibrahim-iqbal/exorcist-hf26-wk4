@@ -218,7 +218,7 @@ export async function runScan(
   onProgress({ phase: 'analyzing', progress: 95, message: 'Seeking resurrections...', result: null, error: null });
 
   // Calculate score
-  const healthScore = calculateHealthScore(checks);
+  const healthScore = calculateHealthScore(checks, all.length);
   const totalFindings = checks.reduce((sum, c) => sum + c.findings.length, 0);
 
   const result: ScanResult = {

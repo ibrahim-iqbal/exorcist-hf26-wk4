@@ -324,23 +324,38 @@ export function checkResurrection(
 }
 
 // ─── Health score ────────────────────────────────────────────
-export function calculateHealthScore(checks: CheckResult[]): number {
+export function calculateHealthScore(checks: CheckResult[], totalDeps?: number): number {
+  // Per-category penalty caps prevent one noisy category from zeroing out the score
+  const CAT_CAP: Record<string, number> = {
+    dead: 30,
+    cursed: 20,
+    possession: 20,
+    bloated: 15,
+    ancient: 20,
+    dormant: 15,
+    resurrection: 0, // info-only, no penalty
+  };
+
   let penalty = 0;
 
   for (const check of checks) {
+    let catPenalty = 0;
     for (const f of check.findings) {
       switch (f.severity) {
-        case 'critical':
-          penalty += 10;
-          break;
-        case 'warning':
-          penalty += 5;
-          break;
-        case 'info':
-          penalty += 2;
-          break;
+        case 'critical': catPenalty += 10; break;
+        case 'warning':  catPenalty += 5;  break;
+        case 'info':     catPenalty += 2;  break;
       }
     }
+    const cap = CAT_CAP[check.category] ?? 20;
+    penalty += Math.min(catPenalty, cap);
+  }
+
+  // Large projects naturally have more findings — scale penalty down slightly
+  // 10 deps = factor 1.0, 50 deps = 0.85, 100 deps = 0.75, 200+ deps = 0.65
+  if (totalDeps && totalDeps > 10) {
+    const scale = Math.max(0.65, 1 - Math.log10(totalDeps / 10) * 0.27);
+    penalty = Math.round(penalty * scale);
   }
 
   return Math.max(0, Math.min(100, 100 - penalty));

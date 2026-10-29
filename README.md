@@ -133,7 +133,6 @@ Stated plainly:
 
 Issues and PRs welcome. The main areas that could use help:
 
-- [x] ~~Lottie ambient animations~~ → CSS keyframe candles, embers, blood drips
 - [ ] IndexedDB caching for model weights across sessions
 - [ ] Lockfile parsing for transitive dependency analysis
 - [ ] Additional check categories (security advisories, TypeScript coverage)
