@@ -58,7 +58,7 @@ export default function App() {
   if (phase === 'results' && result) {
     return (
       <div className="enter">
-      <Shell scrawls={SCRAWLS_RESULTS} lantern={lantern} homeY={380} bottomPad={226}>
+      <Shell scrawls={SCRAWLS_RESULTS} lantern={lantern} homeY={380} bottomPad={306}>
         <Results result={result} onReset={reset} lantern={lantern} onToggleLantern={toggleLantern} theme={theme} onToggleTheme={toggle} soundOn={soundOn} onToggleSound={toggleSound} />
       </Shell>
       </div>

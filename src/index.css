@@ -159,7 +159,7 @@ html[data-theme="light"] .tex-dust{background-image:url(/textures/light/dust.png
 html[data-theme="light"] .tex-grain{background-image:url(/textures/light/grain.png);opacity:.14}
 
 
-.credits{position:absolute;left:0;right:0;bottom:18px;z-index:7;margin:0;padding:0 24px;text-align:center;font:400 10px/2.2 'IBM Plex Mono',monospace;color:#CFC6B0;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.credits{position:absolute;left:0;right:0;bottom:28px;z-index:7;margin:0;padding:0 24px;text-align:center;font:400 10px/2.4 'IBM Plex Mono',monospace;color:#CFC6B0;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 .credits a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .credits a:hover{color:#fff}
 
