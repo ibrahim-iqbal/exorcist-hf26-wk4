@@ -82,8 +82,9 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
   const fetchGh = useCallback(async () => {
     if (!idle || ghLoading) return;
     setLocalError('');
-    // Accept github.com/user/repo or just user/repo — owner and repo must be valid GitHub names
-    const m = ghUrl.trim().match(/^(?:https?:\/\/)?(?:github\.com\/)?([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?)\/([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?)(?:\.git)?\/?$/);
+    // Accept github.com/user/repo, www.github.com/user/repo, or just user/repo, with
+    // any trailing path (e.g. /tree/main) ignored — owner and repo must be valid GitHub names
+    const m = ghUrl.trim().match(/^(?:https?:\/\/)?(?:www\.)?(?:github\.com\/)?([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?)\/([a-zA-Z0-9](?:[a-zA-Z0-9._-]*?[a-zA-Z0-9])?)(?:\.git)?(?:\/.*)?$/);
     if (!m) return setLocalError('Paste a GitHub URL like github.com/user/repo');
     const slug = `${m[1]}/${m[2]}`;
     setGhLoading(true);

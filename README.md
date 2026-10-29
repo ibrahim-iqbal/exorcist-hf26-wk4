@@ -49,7 +49,7 @@ The invoicing-app fix is `npm audit`, which covers CVEs but not the slow rot —
 
 - **Graceful fallback.** If the embedding model can't load (offline, low memory, unsupported browser), Exorcist skips the two embedding-based checks and still runs the other five. No crash, no blank screen.
 
-- **Health score.** Findings roll up into a single 0–100 score with severity-weighted penalties (critical −10, warning −5, info −2).
+- **Health score.** Findings roll up into a single 0–100 score with severity-weighted penalties (critical −10, warning −5, info −2). See [How the score is calculated](#how-the-score-is-calculated) below.
 
 - **Themed UI.** Dark and light themes inspired by Victorian-era broadside posters, complete with atmospheric textures (grain, dust, stain), a blood-drip ceiling, flickering candles, a lantern that follows your cursor, and handwritten scrawls only visible near the light. IM Fell English headings, IBM Plex Mono data, Homemade Apple scrawls. Findings are presented as category bands with sigils, and clicking one opens a torn-paper case note with remediation commands.
 
@@ -118,6 +118,45 @@ Exorcist runs **entirely in the browser**. Your `package.json` never leaves your
 - **Inspectable.** Every analyzer threshold, every similarity score, every heuristic is in the source. Disagree with the 82% duplicate threshold? Change it.
 
 A closed embedding API would give the same duplicate detection quality, but it would require sending every package description to a server, paying per request, and trusting that the endpoint stays available. Open-weight means the intelligence lives where the data already is: on your machine.
+
+## How the score is calculated
+
+Every scan starts at 100 and loses points per finding:
+
+| Severity | Penalty |
+|---|---|
+| Critical | −10 |
+| Warning | −5 |
+| Info | −2 |
+
+**Per-category caps.** One noisy category (say, 15 ancient packages) can't single-handedly tank the score. Each of the 7 checks has its own penalty ceiling before it's added to the total:
+
+| Category | Cap |
+|---|---|
+| Dead spirits (deprecated) | 30 |
+| Cursed licenses | 20 |
+| Possessions (duplicates) | 20 |
+| Ancient spirits (major versions behind) | 20 |
+| Bloated spirits (bundle size) | 15 |
+| Dormant spirits (unmaintained) | 15 |
+| Resurrection (suggestions) | 0 — informational only, never penalized |
+
+**Size scaling.** Larger `package.json` files accumulate more findings just by having more dependencies, so the total penalty is scaled down as dependency count grows past 10:
+
+```
+scale = max(0.65, 1 − log10(totalDeps / 10) × 0.27)
+```
+
+| Dependencies | Scale factor |
+|---|---|
+| ≤10 | 1.0 (no scaling) |
+| 50 | ~0.85 |
+| 100 | ~0.75 |
+| 200+ | ~0.65 (floor) |
+
+The final score is `100 − (total penalty × scale)`, clamped to 0–100. This keeps a 150-dependency monorepo from scoring unfairly worse than a 10-dependency toy project with the same *proportion* of unhealthy packages.
+
+The full implementation is in [`src/lib/analyzers.ts`](./src/lib/analyzers.ts), function `calculateHealthScore`.
 
 ## Honest limits
 
