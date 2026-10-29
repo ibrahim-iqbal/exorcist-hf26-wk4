@@ -18,14 +18,50 @@ import {
 
 export type ScanProgressCallback = (state: ScanState) => void;
 
-/** Parse raw package.json text */
+export const MAX_DEPS = 400;
+const MODEL_TIMEOUT_MS = 120_000;
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Parse raw package.json text and make sure it is shaped like one. */
 export function parsePackageJson(raw: string): PackageJson {
+  let data: unknown;
   try {
-    return JSON.parse(raw);
+    data = JSON.parse(raw);
   } catch {
-    throw new Error('Invalid package.json — could not parse JSON');
+    throw new Error('That is not valid JSON.');
   }
+  if (!isPlainObject(data)) throw new Error('A package.json must be a JSON object.');
+  for (const key of ['dependencies', 'devDependencies'] as const) {
+    const v = data[key];
+    if (v !== undefined && !isPlainObject(v)) throw new Error(`"${key}" must be an object of name: version pairs.`);
+  }
+  // Keep only string versions so odd values cannot reach the analyzers.
+  const clean = (v: unknown): Record<string, string> =>
+    isPlainObject(v) ? Object.fromEntries(Object.entries(v).filter(([, x]) => typeof x === 'string') as [string, string][]) : {};
+  return {
+    ...(data as object),
+    name: typeof data.name === 'string' ? data.name : undefined,
+    license: typeof data.license === 'string' ? data.license : undefined,
+    dependencies: clean(data.dependencies),
+    devDependencies: clean(data.devDependencies),
+  } as PackageJson;
 }
+
+const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+  new Promise<T>((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error('timeout')), ms);
+    p.then(
+      (v) => {
+        clearTimeout(t);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(t);
+        reject(e);
+      },
+    );
+  });
 
 /** Extract all dependency names from package.json */
 function getAllDeps(pkg: PackageJson): {
@@ -56,14 +92,17 @@ export async function runScan(
   const { all, prod, dev, versions } = getAllDeps(pkg);
 
   if (all.length === 0) {
-    throw new Error('No dependencies found in package.json');
+    throw new Error('This tome lists no dependencies. Nothing to exorcise.');
+  }
+  if (all.length > MAX_DEPS) {
+    throw new Error(`That tome is too large (${all.length} dependencies, ${MAX_DEPS} max).`);
   }
 
   // Phase 2: Load model (graceful fallback if unavailable)
   let modelAvailable = false;
   onProgress({ phase: 'loading-model', progress: 5, message: 'Summoning the spirit detector...', result: null, error: null });
   try {
-    await loadModel((p) => {
+    await withTimeout(loadModel((p) => {
       if (p.progress !== undefined) {
         onProgress({
           phase: 'loading-model',
@@ -73,7 +112,7 @@ export async function runScan(
           error: null,
         });
       }
-    });
+    }), MODEL_TIMEOUT_MS);
     modelAvailable = true;
   } catch {
     // Model unavailable — skip embedding-based checks (possessions, resurrection)
@@ -91,6 +130,10 @@ export async function runScan(
       error: null,
     });
   });
+
+  if (registry.size === 0) {
+    throw new Error('Could not reach the npm registry. Check your connection and try again.');
+  }
 
   // Fetch bundle sizes in parallel-ish
   onProgress({ phase: 'fetching-metadata', progress: 45, message: 'Measuring bloat...', result: null, error: null });
@@ -187,6 +230,7 @@ export async function runScan(
     analysisTimeMs: performance.now() - start,
     checks,
     totalFindings,
+    modelSkipped: !modelAvailable,
   };
 
   onProgress({ phase: 'done', progress: 100, message: 'Exorcism complete.', result, error: null });

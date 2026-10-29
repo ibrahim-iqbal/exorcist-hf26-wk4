@@ -7,6 +7,7 @@ Exorcist is built for Hacktoberfest 2026 (Ghost in the Machine).
 
 ## Data
 - Package metadata comes from the public [npm registry](https://registry.npmjs.org).
+- Bundle sizes come from [Bundlephobia](https://bundlephobia.com).
 
 ## Fonts (self-hosted through `@fontsource`)
 - **IM Fell English** by Igino Marini. SIL Open Font License 1.1.

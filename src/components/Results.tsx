@@ -10,6 +10,7 @@ import { prefersReducedMotion } from '../hooks/motion';
 import { BANDS, BAND_ORDER, findings, kb, noteFor, quiet, verdict, word, type Note, BAND_SCRAWLS } from '../lib/present';
 import type { CheckCategory, Finding, ScanResult } from '../lib/types';
 import { ThemeIcon } from './Landing';
+import { toPng } from 'html-to-image';
 
 interface ResultsProps {
   result: ScanResult;
@@ -18,6 +19,8 @@ interface ResultsProps {
   onToggleLantern: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  soundOn: boolean;
+  onToggleSound: () => void;
 }
 
 const MAX_ROWS = 3;
@@ -56,14 +59,17 @@ interface OpenNote {
   top: number;
 }
 
-export function Results({ result, onReset, lantern, onToggleLantern, theme, onToggleTheme }: ResultsProps) {
+export function Results({ result, onReset, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound }: ResultsProps) {
   const score = Math.max(0, Math.min(100, Math.round(result.healthScore)));
   const shown = useCountUp(score, 1400, 400);
   const [armed, setArmed] = useState(prefersReducedMotion());
   const [open, setOpen] = useState<OpenNote | null>(null);
   const [expanded, setExpanded] = useState<Set<CheckCategory>>(new Set());
   const [copied, setCopied] = useState<'' | 'one' | 'all'>('');
+  const [sharing, setSharing] = useState(false);
   const section = useRef<HTMLElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const tagRef = useRef<HTMLDivElement>(null);
   const bands = useRef<Partial<Record<CheckCategory, HTMLDivElement | null>>>({});
   const layer = useContext(LanternLayer);
   const C = useCompact();
@@ -104,6 +110,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setArmed(true)));
     return () => cancelAnimationFrame(id);
   }, []);
+  useEffect(() => { heading.current?.focus(); }, []);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(null);
@@ -128,6 +135,27 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
     setCopied(k);
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setCopied(''), 1600);
+  };
+
+  const shareTag = async () => {
+    const el = tagRef.current;
+    if (!el || sharing) return;
+    setSharing(true);
+    try {
+      const url = await toPng(el, { pixelRatio: 2, backgroundColor: '#0C0908' });
+      // Try native share first (mobile), fall back to download
+      const blob = await (await fetch(url)).blob();
+      const file = new File([blob], `${result.projectName || 'exorcist'}-report.png`, { type: 'image/png' });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `${result.projectName} — ${verdict(score)}/100` });
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+      }
+    } catch { /* user cancelled share or export failed */ }
+    setSharing(false);
   };
 
   const pick = (cat: CheckCategory, index: number) => {
@@ -239,7 +267,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
         {/* Hanging toe tag with the receipt stapled below */}
         <div className="swing" style={at('position:absolute;left:48px;top:0;width:264px;z-index:4', 'position:relative;order:4;margin:28px auto 0;width:264px;z-index:4')}>
           <div style={css('width:2px;height:72px;margin:0 auto;background:var(--string)')} />
-          <div style={css('position:relative;box-sizing:border-box;padding:52px 28px 26px;color:#1B1410;clip-path:polygon(0 34px, 58px 0, 206px 0, 264px 34px, 264px 100%, 264px 100%, 253px calc(100% - 8px), 242px 100%, 231px calc(100% - 8px), 220px 100%, 209px calc(100% - 8px), 198px 100%, 187px calc(100% - 8px), 176px 100%, 165px calc(100% - 8px), 154px 100%, 143px calc(100% - 8px), 132px 100%, 121px calc(100% - 8px), 110px 100%, 99px calc(100% - 8px), 88px 100%, 77px calc(100% - 8px), 66px 100%, 55px calc(100% - 8px), 44px 100%, 33px calc(100% - 8px), 22px 100%, 11px calc(100% - 8px), 0 100%);background:radial-gradient(circle at 76% 58%, transparent 26px, rgba(110,70,30,.2) 27px 31px, transparent 33px), linear-gradient(var(--paper-a), var(--paper-b))')}>
+          <div ref={tagRef} style={css('position:relative;box-sizing:border-box;padding:52px 28px 26px;color:#1B1410;clip-path:polygon(0 34px, 58px 0, 206px 0, 264px 34px, 264px 100%, 264px 100%, 253px calc(100% - 8px), 242px 100%, 231px calc(100% - 8px), 220px 100%, 209px calc(100% - 8px), 198px 100%, 187px calc(100% - 8px), 176px 100%, 165px calc(100% - 8px), 154px 100%, 143px calc(100% - 8px), 132px 100%, 121px calc(100% - 8px), 110px 100%, 99px calc(100% - 8px), 88px 100%, 77px calc(100% - 8px), 66px 100%, 55px calc(100% - 8px), 44px 100%, 33px calc(100% - 8px), 22px 100%, 11px calc(100% - 8px), 0 100%);background:radial-gradient(circle at 76% 58%, transparent 26px, rgba(110,70,30,.2) 27px 31px, transparent 33px), linear-gradient(var(--paper-a), var(--paper-b))')}>
             <div style={css('position:absolute;left:50%;top:18px;width:18px;height:18px;margin-left:-9px;border-radius:9999px;background:var(--bg);border:2px solid #A79E86;box-sizing:border-box')} />
             <div style={css('position:absolute;left:50%;top:-2px;width:2px;height:28px;margin-left:-1px;background:var(--string)')} />
             <div className="px" style={css('font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#5B5040')}>Tag No. {tagNumber(result.projectName)}</div>
@@ -254,7 +282,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
               <div className="rrow"><span>Dependencies</span><span className="lead" /><span>{result.totalDeps}</span></div>
               <div className="rrow"><span>Hauntings</span><span className="lead" /><span>{bound}</span></div>
               <div className="rrow"><span>Analysis time</span><span className="lead" /><span>{(result.analysisTimeMs / 1000).toFixed(1)}s</span></div>
-              <div className="rrow"><span>Model</span><span className="lead" /><span>EmbeddingGemma</span></div>
+              <div className="rrow"><span>Model</span><span className="lead" /><span style={{ color: result.modelSkipped ? '#A1121F' : undefined }}>{result.modelSkipped ? 'unavailable' : 'EmbeddingGemma'}</span></div>
               <div className="rrow"><span>Bundle impact</span><span className="lead" /><span style={{ color: bloat > 0 ? '#A1121F' : undefined }}>{bloat > 0 ? `+${Math.round(bloat / 1024)} kB` : '0 kB'}</span></div>
               <div className="rrow"><span>Alternatives</span><span className="lead" /><span style={{ color: saved > 0 ? '#1F6B4A' : undefined }}>{saved} found</span></div>
               <div style={css('height:0;border-top:3px double rgba(27,20,16,.55);margin:8px 0 8px')} />
@@ -263,6 +291,10 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
             <div className="px" style={css('margin-top:12px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#5B5040')}>Examined {date}</div>
             <div dangerouslySetInnerHTML={{ __html: BARCODE_HTML }} />
           </div>
+          <button className="share" type="button" aria-label="Save toe tag as image" onClick={shareTag} disabled={sharing}>
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/><polyline points="7 11 12 16 17 11"/><line x1="12" y1="4" x2="12" y2="16"/></svg>
+            <span>{sharing ? 'Saving…' : 'Save tag'}</span>
+          </button>
         </div>
         <span className="fly fly1" aria-hidden="true" style={{ left: 262, top: 210 }} />
         <span className="fly fly2" aria-hidden="true" style={{ left: 96, top: 340 }} />
@@ -271,6 +303,7 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
 
         {/* Top bar */}
         <header style={at('position:absolute;left:0;right:0;top:0;z-index:6;height:88px;padding:22px 40px 0;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;gap:20px', 'position:relative;order:1;z-index:6;padding:6px 16px 0;display:flex;align-items:center;justify-content:center;gap:16px')}>
+          <button className="sndtog" type="button" onClick={onToggleSound} aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}>{soundOn ? 'Sound on' : 'Sound off'}</button>
           <button className="link" type="button" onClick={onToggleLantern}>{lantern ? 'Lantern on' : 'Lantern off'}</button>
           <button className="link" type="button" onClick={onReset}>New scan</button>
           <button className="iconbtn" type="button" onClick={onToggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -278,10 +311,11 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
           </button>
         </header>
         <div style={at('position:absolute;left:0;right:0;top:14px;z-index:6;display:flex;flex-direction:column;align-items:center;pointer-events:none', 'position:relative;order:0;margin-top:18px;z-index:6;display:flex;flex-direction:column;align-items:center;pointer-events:none')}>
-          <h1 style={css(`margin:0;font-family:'IM Fell English',serif;font-style:normal;font-size:${C ? 44 : 64}px;font-weight:400;line-height:1;display:flex;align-items:center;gap:14px;color:var(--text);letter-spacing:.01em;text-shadow:var(--wm-shadow)`)}>
+          <h1 ref={heading} tabIndex={-1} style={css(`margin:0;font-family:'IM Fell English',serif;font-style:normal;font-size:${C ? 44 : 64}px;font-weight:400;line-height:1;display:flex;align-items:center;gap:14px;color:var(--text);letter-spacing:.01em;text-shadow:var(--wm-shadow);outline:none`)}>
             <svg aria-hidden="true" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--blood)" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="12" r="10" /><path d="M12 4V20" /><path d="M8 15H16" /></svg>
             Exorcist
           </h1>
+          <div role="status" aria-live="polite" className="sr-only">{`${result.projectName ?? 'Project'} scored ${score} out of 100: ${verdict(score)}`}</div>
           <div className="px" style={css('margin-top:8px;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--text2)')}>Exorcism for your package.json</div>
         </div>
 

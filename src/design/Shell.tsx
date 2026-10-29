@@ -167,8 +167,9 @@ export function Shell({ children, scrawls, lantern, homeY, contentMin = 0, botto
       </div>
       <div className="tex tex-stain" aria-hidden="true" />
 
+      <a href="#main-content" className="skip">Skip to content</a>
       <LanternLayer.Provider value={layer}>
-        <div style={{ position: 'relative', zoom }}>{children}</div>
+        <main id="main-content" style={{ position: 'relative', zoom }}>{children}</main>
       </LanternLayer.Provider>
 
       {/* The dark rises: a thick pool, not water */}
@@ -201,7 +202,7 @@ export function Shell({ children, scrawls, lantern, homeY, contentMin = 0, botto
         Built for Hacktoberfest 2026 · Ghost in the Machine
         <br />
         Model: <a href="https://huggingface.co/google/embeddinggemma-300m" target="_blank" rel="noreferrer">EmbeddingGemma</a> by Google, run with{' '}
-        <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noreferrer">Transformers.js</a> · Data: <a href="https://registry.npmjs.org" target="_blank" rel="noreferrer">npm registry</a>
+        <a href="https://huggingface.co/docs/transformers.js" target="_blank" rel="noreferrer">Transformers.js</a> · Data: <a href="https://www.npmjs.com" target="_blank" rel="noreferrer">npm registry</a> and <a href="https://bundlephobia.com" target="_blank" rel="noreferrer">Bundlephobia</a>
         <br />
         Fonts: IM Fell English (Igino Marini), IBM Plex Mono (IBM), Homemade Apple (Font Diner), all under the SIL Open Font License or Apache 2.0
       </p>

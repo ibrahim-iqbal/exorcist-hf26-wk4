@@ -77,6 +77,8 @@ export interface ScanResult {
   checks: CheckResult[];
   /** Flat count of all findings */
   totalFindings: number;
+  /** true when the embedding model could not load, so possessions and resurrections were skipped */
+  modelSkipped?: boolean;
 }
 
 export type ScanPhase =

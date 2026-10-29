@@ -14,6 +14,8 @@ interface LandingProps {
   onToggleLantern: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  soundOn: boolean;
+  onToggleSound: () => void;
 }
 
 const HUNT: { kind: CheckCategory; title: string; color: string; line: string }[] = [
@@ -35,7 +37,7 @@ const PHASE_MSG: Record<string, string> = {
   done: 'Judgement',
 };
 
-export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, onToggleTheme }: LandingProps) {
+export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, onToggleTheme, soundOn, onToggleSound }: LandingProps) {
   const C = useCompact();
   const at = (desk: string, phone: string) => css(C ? phone : desk);
   const input = useRef<HTMLInputElement>(null);
@@ -43,6 +45,8 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
   const [hover, setHover] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [localError, setLocalError] = useState('');
+  const [ghUrl, setGhUrl] = useState('');
+  const [ghLoading, setGhLoading] = useState(false);
 
   const idle = scan === null;
   const hot = (hover || dragging) && idle;
@@ -75,9 +79,32 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
     if (idle) input.current?.click();
   };
 
+  const fetchGh = useCallback(async () => {
+    if (!idle || ghLoading) return;
+    setLocalError('');
+    // Accept github.com/user/repo or just user/repo
+    const m = ghUrl.trim().match(/(?:github\.com\/)?([^/\s]+\/[^/\s]+)/);
+    if (!m) return setLocalError('Paste a GitHub URL like github.com/user/repo');
+    const slug = m[1].replace(/\.git$/, '');
+    setGhLoading(true);
+    try {
+      // Try main, then master
+      let res = await fetch(`https://raw.githubusercontent.com/${slug}/HEAD/package.json`);
+      if (!res.ok) res = await fetch(`https://raw.githubusercontent.com/${slug}/main/package.json`);
+      if (!res.ok) res = await fetch(`https://raw.githubusercontent.com/${slug}/master/package.json`);
+      if (!res.ok) throw new Error('Could not find package.json in that repo.');
+      const text = await res.text();
+      JSON.parse(text); // validate
+      onFile(text);
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : 'Failed to fetch.');
+    }
+    setGhLoading(false);
+  }, [ghUrl, idle, ghLoading, onFile]);
+
   return (
     <div
-      style={C ? { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 } : { position: 'relative', width: 1200, height: 1160, margin: '0 auto' }}
+      style={C ? { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 0 } : { position: 'relative', width: 1200, height: 1240, margin: '0 auto' }}
       onDragEnter={(e) => {
         e.preventDefault();
         drag.current++;
@@ -98,6 +125,9 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
       }}
     >
       <header style={at('position:absolute;left:0;right:0;top:0;z-index:7;height:88px;padding:22px 40px 0;box-sizing:border-box;display:flex;align-items:center;justify-content:flex-end;gap:20px', 'position:relative;order:1;z-index:7;padding:6px 16px 0;display:flex;align-items:center;justify-content:center;gap:16px')}>
+        <button className="sndtog" type="button" onClick={onToggleSound} aria-label={soundOn ? 'Turn sound off' : 'Turn sound on'}>
+          {soundOn ? 'Sound on' : 'Sound off'}
+        </button>
         <button className="link" type="button" onClick={onToggleLantern}>
           {lantern ? 'Lantern on' : 'Lantern off'}
         </button>
@@ -167,6 +197,9 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
         <span role="status" style={css(`position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:${idle ? 0 : 1};transition:opacity .35s ease`)}>
           <span className="cg" style={css('font-size:132px;line-height:.85;font-weight:700;color:var(--text);letter-spacing:-.02em')}>{pct}</span>
           <span className="px" style={css('margin-top:18px;font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--text2)')}>{scan ? (PHASE_MSG[scan.phase] ?? scan.message) : ''}</span>
+          <span className="px" style={css('margin-top:12px;max-width:260px;min-height:30px;font-size:10px;line-height:1.5;letter-spacing:.06em;color:var(--text2);opacity:.8;text-align:center')}>
+            {scan?.phase === 'loading-model' ? 'First visit only: the model is downloaded once, then kept in your browser.' : scan?.message ?? ''}
+          </span>
         </span>
       </button>
       </div>
@@ -189,13 +222,33 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
         {(localError || error) && <p role="alert" className="errline">{localError || error}</p>}
       </div>
 
+      {/* GitHub URL */}
+      <div className="rise" style={at('position:absolute;left:0;right:0;top:734px;display:flex;flex-direction:column;align-items:center;gap:12px;animation-delay:.7s;z-index:6', 'position:relative;order:4;margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:12px;animation-delay:.7s;z-index:6;padding:0 16px;width:100%;box-sizing:border-box')}>
+        <div className="ghdiv">or scan a public repo</div>
+        <div className="ghrow">
+          <input
+            className="ghurl"
+            type="text"
+            placeholder="github.com/user/repo"
+            value={ghUrl}
+            onChange={(e) => setGhUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') fetchGh(); }}
+            disabled={!idle || ghLoading}
+            aria-label="GitHub repository URL"
+          />
+          <button className="ghgo" type="button" disabled={!idle || ghLoading || !ghUrl.trim()} onClick={fetchGh}>
+            {ghLoading ? 'Fetching…' : 'Scan'}
+          </button>
+        </div>
+      </div>
+
       {/* What we hunt */}
-      <div className="rise" style={at('position:absolute;left:40px;right:40px;top:774px;display:flex;align-items:center;gap:20px;animation-delay:.8s;z-index:6', 'position:relative;order:4;width:100%;box-sizing:border-box;padding:0 16px;margin-top:38px;display:flex;align-items:center;gap:12px;animation-delay:.8s;z-index:6')}>
+      <div className="rise" style={at('position:absolute;left:40px;right:40px;top:850px;display:flex;align-items:center;gap:20px;animation-delay:.8s;z-index:6', 'position:relative;order:5;width:100%;box-sizing:border-box;padding:0 16px;margin-top:38px;display:flex;align-items:center;gap:12px;animation-delay:.8s;z-index:6')}>
         <span style={css('flex:1;height:1px;background:rgba(var(--rgb-text),.14)')} />
         <span className="px" style={css('font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--text2)')}>Seven things we hunt</span>
         <span style={css('flex:1;height:1px;background:rgba(var(--rgb-text),.14)')} />
       </div>
-      <div style={at('position:absolute;left:40px;right:40px;top:812px;display:flex;justify-content:space-between;z-index:6', 'position:relative;order:5;width:100%;box-sizing:border-box;padding:0 16px;margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:26px 12px;justify-items:center;z-index:6')}>
+      <div style={at('position:absolute;left:40px;right:40px;top:888px;display:flex;justify-content:space-between;z-index:6', 'position:relative;order:6;width:100%;box-sizing:border-box;padding:0 16px;margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:26px 12px;justify-items:center;z-index:6')}>
         {HUNT.map((h, i) => (
           <div key={h.kind} className="rise" style={css(`animation-delay:${(0.9 + i * 0.1).toFixed(2)}s;width:${C ? '100%' : '160px'};display:flex;flex-direction:column;align-items:center;text-align:center`)}>
             <Sigil kind={h.kind} index={i} size={46} color={h.color} variant="landing" />

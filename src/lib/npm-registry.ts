@@ -2,6 +2,7 @@ import type { NpmPackageInfo, BundlephobiaInfo } from './types';
 
 const NPM_BASE = 'https://registry.npmjs.org';
 const BUNDLEPHOBIA_BASE = 'https://bundlephobia.com/api/size';
+const FETCH_TIMEOUT_MS = 12_000;
 
 /** Fetch package metadata from npm registry. Returns null on 404/error. */
 export async function fetchPackageInfo(name: string): Promise<NpmPackageInfo | null> {
@@ -9,6 +10,7 @@ export async function fetchPackageInfo(name: string): Promise<NpmPackageInfo | n
     // Use abbreviated metadata endpoint for speed, fall back to full for time/versions
     const res = await fetch(`${NPM_BASE}/${encodeURIComponent(name)}`, {
       headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) return null;
     return await res.json();
@@ -26,6 +28,7 @@ export async function fetchBundleSize(
     const pkg = version ? `${name}@${version}` : name;
     const res = await fetch(
       `${BUNDLEPHOBIA_BASE}?package=${encodeURIComponent(pkg)}`,
+      { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) },
     );
     if (!res.ok) return null;
     return await res.json();

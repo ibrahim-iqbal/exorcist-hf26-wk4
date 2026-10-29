@@ -4,6 +4,7 @@ import { SCRAWLS_LANDING, SCRAWLS_RESULTS } from './design/static';
 import { Landing } from './components/Landing';
 import { Results } from './components/Results';
 import { useTheme } from './hooks/useTheme';
+import { useSound } from './hooks/useSound';
 import { prefersReducedMotion } from './hooks/motion';
 import { runScan } from './lib/scanner';
 import type { ScanResult, ScanState } from './lib/types';
@@ -19,6 +20,7 @@ export default function App() {
   const [errorMsg, setErrorMsg] = useState('');
   const [lantern, setLantern] = useState(() => !prefersReducedMotion());
   const { theme, toggle } = useTheme();
+  const { soundOn, toggleSound, bell } = useSound();
 
   const handleFile = useCallback(async (content: string) => {
     setPhase('scanning');
@@ -31,6 +33,7 @@ export default function App() {
       const quick = prefersReducedMotion();
       setScanState({ phase: 'done', progress: 100, message: '', result: r, error: null });
       setPhase('judging');
+      bell();
       await wait(quick ? 200 : 1300);
       setPhase('leaving');
       await wait(quick ? 0 : 500);
@@ -56,14 +59,14 @@ export default function App() {
     return (
       <div className="enter">
       <Shell scrawls={SCRAWLS_RESULTS} lantern={lantern} homeY={380} bottomPad={226}>
-        <Results result={result} onReset={reset} lantern={lantern} onToggleLantern={toggleLantern} theme={theme} onToggleTheme={toggle} />
+        <Results result={result} onReset={reset} lantern={lantern} onToggleLantern={toggleLantern} theme={theme} onToggleTheme={toggle} soundOn={soundOn} onToggleSound={toggleSound} />
       </Shell>
       </div>
     );
   }
   return (
     <div className={phase === 'leaving' ? 'leave' : undefined}>
-    <Shell scrawls={SCRAWLS_LANDING} lantern={lantern} homeY={420} contentMin={1160}>
+    <Shell scrawls={SCRAWLS_LANDING} lantern={lantern} homeY={420} contentMin={1240}>
       <Landing
         scan={phase === 'scanning' || phase === 'judging' || phase === 'leaving' ? scanState : null}
         error={errorMsg}
@@ -72,6 +75,8 @@ export default function App() {
         onToggleLantern={toggleLantern}
         theme={theme}
         onToggleTheme={toggle}
+        soundOn={soundOn}
+        onToggleSound={toggleSound}
       />
     </Shell>
     </div>
