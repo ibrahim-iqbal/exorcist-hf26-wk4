@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+  /* Evil Dead palette — dark mode primary */
+  --color-page: #0A0A0A;
+  --color-surface: #141414;
+  --color-surface-elevated: #1A1A1A;
+  --color-crimson: #E23636;
+  --color-crimson-bright: #FF4444;
+  --color-text-primary: #F5F0E8;
+  --color-text-secondary: #8A8578;
+  --color-text-muted: #5C5850;
+  --color-border-default: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
+
+  /* Per-category accent colors */
+  --color-possession: #9B8AFF;
+  --color-dead: #E23636;
+  --color-dormant: #6B6560;
+  --color-cursed: #D4537E;
+  --color-bloated: #E8A838;
+  --color-ancient: #D85A30;
+  --color-resurrection: #2EA87A;
+
+  /* Light mode overrides */
+  --color-page-light: #FAF8F5;
+  --color-surface-light: #FFFFFF;
+  --color-crimson-light: #C62828;
+  --color-text-primary-light: #1A1714;
+  --color-text-secondary-light: #6B6560;
+
+  /* Fonts */
+  --font-heading: "Cinzel", serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@font-face {
+  font-family: "Cinzel";
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/cinzel/v23/8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnfY3lCA.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_qU79TR_V.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/jetbrainsmono/v18/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxTOlOTk6OThhvA.woff2") format("woff2");
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-page);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+  body {
+    background: var(--color-page-light);
+    color: var(--color-text-primary-light);
+  }
+}
