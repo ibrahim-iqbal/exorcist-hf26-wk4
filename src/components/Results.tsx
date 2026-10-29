@@ -142,12 +142,12 @@ export function Results({ result, onReset, lantern, onToggleLantern, theme, onTo
     if (!el || sharing) return;
     setSharing(true);
     try {
-      const url = await toPng(el, { pixelRatio: 2, backgroundColor: '#0C0908' });
+      const url = await toPng(el, { pixelRatio: 2 });
       // Try native share first (mobile), fall back to download
       const blob = await (await fetch(url)).blob();
       const file = new File([blob], `${result.projectName || 'exorcist'}-report.png`, { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `${result.projectName} — ${verdict(score)}/100` });
+        await navigator.share({ files: [file], title: `${result.projectName} — ${verdict(score)} ${score}/100` });
       } else {
         const a = document.createElement('a');
         a.href = url;

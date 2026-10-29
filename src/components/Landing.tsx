@@ -82,10 +82,10 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
   const fetchGh = useCallback(async () => {
     if (!idle || ghLoading) return;
     setLocalError('');
-    // Accept github.com/user/repo or just user/repo
-    const m = ghUrl.trim().match(/(?:github\.com\/)?([^/\s]+\/[^/\s]+)/);
+    // Accept github.com/user/repo or just user/repo — owner and repo must be valid GitHub names
+    const m = ghUrl.trim().match(/^(?:https?:\/\/)?(?:github\.com\/)?([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?)\/([a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?)(?:\.git)?\/?$/);
     if (!m) return setLocalError('Paste a GitHub URL like github.com/user/repo');
-    const slug = m[1].replace(/\.git$/, '');
+    const slug = `${m[1]}/${m[2]}`;
     setGhLoading(true);
     try {
       // Try main, then master
@@ -94,6 +94,7 @@ export function Landing({ scan, error, onFile, lantern, onToggleLantern, theme, 
       if (!res.ok) res = await fetch(`https://raw.githubusercontent.com/${slug}/master/package.json`);
       if (!res.ok) throw new Error('Could not find package.json in that repo.');
       const text = await res.text();
+      if (text.length > 1_000_000) throw new Error('That package.json is too large (1 MB max).');
       JSON.parse(text); // validate
       onFile(text);
     } catch (err) {

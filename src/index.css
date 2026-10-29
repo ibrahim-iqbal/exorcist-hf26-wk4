@@ -63,6 +63,7 @@ body{margin:0;background:var(--bg)}
 @keyframes leaveout{to{opacity:0;transform:scale(1.015)}}
 @keyframes enterin{from{opacity:0}to{opacity:1}}
 .swing{transform-origin:50% 0;animation:swing 6s ease-in-out infinite alternate}
+.swing:hover{animation-play-state:paused}
 .ripple{position:absolute;left:50%;top:50%;width:440px;height:440px;margin:-220px 0 0 -220px;border:1px solid var(--blood);border-radius:9999px;opacity:0;animation:ripple 7s ease-out infinite}
 .fly{position:absolute;width:3px;height:3px;border-radius:9999px;background:#000;box-shadow:0 0 0 1px rgba(255,255,255,.25);z-index:4}
 .fly1{animation:buzz1 4.2s linear infinite}
@@ -158,7 +159,7 @@ html[data-theme="light"] .tex-dust{background-image:url(/textures/light/dust.png
 html[data-theme="light"] .tex-grain{background-image:url(/textures/light/grain.png);opacity:.14}
 
 
-.credits{position:absolute;left:0;right:0;bottom:10px;z-index:7;margin:0;padding:0 16px;text-align:center;font:400 10px/1.7 'IBM Plex Mono',monospace;color:#CFC6B0;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.7)}
+.credits{position:absolute;left:0;right:0;bottom:18px;z-index:7;margin:0;padding:0 24px;text-align:center;font:400 10px/2.2 'IBM Plex Mono',monospace;color:#CFC6B0;opacity:.7;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 .credits a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .credits a:hover{color:#fff}
 

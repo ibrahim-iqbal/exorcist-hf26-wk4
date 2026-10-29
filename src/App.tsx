@@ -43,7 +43,7 @@ export default function App() {
       setErrorMsg(err instanceof Error ? err.message : 'The ritual failed.');
       setPhase('error');
     }
-  }, []);
+  }, [bell]);
 
   const reset = useCallback(() => {
     setPhase('idle');
