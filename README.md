@@ -9,7 +9,7 @@
 [![Powered by EmbeddingGemma](https://img.shields.io/badge/powered%20by-EmbeddingGemma%20300M-E23636.svg)](https://huggingface.co/nickmuchi/EmbeddingGemma-300M-ONNX)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-E23636.svg)](#contributing)
 
-[**Live demo**](https://exorcist.onrender.com) · [**DEV write-up**](./docs/DEV_POST.md) · [**Design spec**](./docs/DESIGN.md)
+[**Live demo**](https://exorcist.onrender.com)
 
 </div>
 
